@@ -1,4 +1,4 @@
-# basic example
+# basic example: custom stream
 
 a really simple project showing off a custom stream built with [river](https://github.com/bmdavis419/river) (TRPC for agent streams)
 

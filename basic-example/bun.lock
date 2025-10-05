@@ -6,6 +6,7 @@
       "dependencies": {
         "@davis7dotsh/river-alpha": "^0.0.2",
         "@lucide/svelte": "^0.544.0",
+        "zod": "^4.1.11",
       },
       "devDependencies": {
         "@sveltejs/adapter-vercel": "^5.10.3",

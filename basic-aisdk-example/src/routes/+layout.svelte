@@ -6,7 +6,10 @@
 </script>
 
 <svelte:head>
+	<title>basic river ex: ai-sdk stream</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{@render children?.()}
+<div class="font-geist">
+	{@render children?.()}
+</div>

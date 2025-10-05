@@ -1,38 +1,23 @@
-# sv
+# basic example: ai-sdk stream
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+a really simple project showing off an ai-sdk agent built with [river](https://github.com/bmdavis419/river) (TRPC for agent streams)
 
-## Creating a project
+this one isn't live, it hits an ai endpoint, i'm not putting that live without a wall in front of it
 
-If you're seeing this, you've probably already done this step. Congrats!
+it's a very svelte-ty example, using the stores for the agent state because it's way nicer and easier to work with then doing it all in the script tag, but it should get the point across
 
-```sh
-# create a new project in the current directory
-npx sv create
+## getting started
 
-# create a new project in my-app
-npx sv create my-app
-```
+1. clone the repo
+2. install dependencies `bun i`
+3. grab an openrouter api key and add it to the `.env` file (see `.env.example`)
+4. run the project `bun dev`
 
-## Developing
+## stuff to go look at:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- `src/lib/river/agents.ts` - the agent code
+- `src/lib/river/router.ts` - the router code
+- `src/lib/river/client.ts` - the river client definition code
+- `src/routes/+page.svelte` - the page code
+- `src/routes/AgentStore.svelte.ts` - the store which has the client agent calling logic
+- `src/routes/api/river/+server.ts` - the river server endpoint code

@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>basic river example</title>
+	<title>basic river ex: custom stream</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
