@@ -1,5 +1,5 @@
 {
-	"name": "river-example-basic-custom",
+	"name": "basic-aisdk-example",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -14,7 +14,7 @@
 		"lint": "prettier --check ."
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-vercel": "^5.10.3",
+		"@sveltejs/adapter-auto": "^6.1.0",
 		"@sveltejs/kit": "^2.43.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",
 		"@tailwindcss/typography": "^0.5.18",
@@ -27,9 +27,5 @@
 		"tailwindcss": "^4.1.13",
 		"typescript": "^5.9.2",
 		"vite": "^7.1.7"
-	},
-	"dependencies": {
-		"@davis7dotsh/river-alpha": "^0.0.2",
-		"@lucide/svelte": "^0.544.0"
 	}
 }
