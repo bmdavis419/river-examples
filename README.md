@@ -1,6 +1,6 @@
 # river examples
 
-a collection of examples on how to use (river, TRPC for streams)[https://github.com/bmdavis419/river] in an actual project
+a collection of examples on how to use [river (it's like TRPC, but for streams/agents)](https://github.com/bmdavis419/river) in an actual project
 
 ## examples
 
