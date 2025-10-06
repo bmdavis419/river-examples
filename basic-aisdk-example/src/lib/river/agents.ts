@@ -40,9 +40,10 @@ export const addTasksAgent = RIVER_SERVER.createAiSdkAgent({
 		userId: z.string(),
 		userMessage: z.string()
 	}),
-	agent: ({ userId, userMessage }) => {
+	agent: ({ userId, userMessage }, abortSignal) => {
 		let curStep = 1;
 		return streamText({
+			abortSignal,
 			model: openrouter('x-ai/grok-4-fast'),
 			system:
 				'You are an internal system designed to parse through messages from users and determine if there are any tasks in them that need to be added to a user\'s todo list. If there are, you should add them to the todo list using the add_task tool. If there are no tasks, you should respond with "No tasks found." Make sure the due date you assign is correct, you can use the get_todays_date tool to get the current date. Make sure all of the text you send is in markdown format.',
