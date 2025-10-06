@@ -4,7 +4,7 @@
     "": {
       "name": "basic-example",
       "dependencies": {
-        "@davis7dotsh/river-alpha": "^0.0.2",
+        "@davis7dotsh/river-alpha": "^0.0.3",
         "@lucide/svelte": "^0.544.0",
         "zod": "^4.1.11",
       },
@@ -26,7 +26,7 @@
     },
   },
   "packages": {
-    "@davis7dotsh/river-alpha": ["@davis7dotsh/river-alpha@0.0.2", "", { "dependencies": { "@lucide/svelte": "^0.544.0", "marked": "^16.3.0", "neverthrow": "^8.2.0", "runed": "^0.34.0", "zod": "^4.1.11" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-KJ305G+UKxg8TbaWSgpgAejfIBpDRsR0OuCkD9WeteUcQpZepV9zsrOoNAWXrJizCU8QJb+Ovy/UwGlmH2m9IA=="],
+    "@davis7dotsh/river-alpha": ["@davis7dotsh/river-alpha@0.0.3", "", { "dependencies": { "@lucide/svelte": "^0.544.0", "marked": "^16.3.0", "neverthrow": "^8.2.0", "runed": "^0.34.0", "zod": "^4.1.11" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-QKFaezfOnL0AfpiKMjq40sFtL3DAYP82KVr9J7Qts82FYgYHTa4xzva1dK/CTCqzLFHARhimUdAOx/trFXOQNw=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.10", "", { "os": "aix", "cpu": "ppc64" }, "sha512-0NFWnA+7l41irNuaSVlLfgNT12caWJVLzp5eAVhZ0z1qpxbockccEt3s+149rE64VUI3Ml2zt8Nv5JVc4QXTsw=="],
 
