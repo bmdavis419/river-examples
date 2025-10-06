@@ -33,6 +33,7 @@
 	"dependencies": {
 		"@davis7dotsh/river-alpha": "^0.0.2",
 		"@lucide/svelte": "^0.544.0",
+		"marked": "^16.3.0",
 		"zod": "^4.1.11"
 	}
 }
