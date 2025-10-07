@@ -4,10 +4,10 @@
     "": {
       "name": "basic-aisdk-example",
       "dependencies": {
-        "@davis7dotsh/river-alpha": "^0.0.3",
+        "@davis7dotsh/river-alpha": "^0.0.5",
         "@lucide/svelte": "^0.544.0",
         "marked": "^16.3.0",
-        "zod": "^4.1.11",
+        "zod": "^4.1.12",
       },
       "devDependencies": {
         "@openrouter/ai-sdk-provider": "^1.2.0",
@@ -35,7 +35,7 @@
 
     "@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@3.0.10", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@standard-schema/spec": "^1.0.0", "eventsource-parser": "^3.0.5" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-T1gZ76gEIwffep6MWI0QNy9jgoybUHE7TRaHB5k54K8mF91ciGFlbtCGxDYhMH3nCRergKwYFIDeFF0hJSIQHQ=="],
 
-    "@davis7dotsh/river-alpha": ["@davis7dotsh/river-alpha@0.0.3", "", { "dependencies": { "@lucide/svelte": "^0.544.0", "marked": "^16.3.0", "neverthrow": "^8.2.0", "runed": "^0.34.0", "zod": "^4.1.11" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-QKFaezfOnL0AfpiKMjq40sFtL3DAYP82KVr9J7Qts82FYgYHTa4xzva1dK/CTCqzLFHARhimUdAOx/trFXOQNw=="],
+    "@davis7dotsh/river-alpha": ["@davis7dotsh/river-alpha@0.0.5", "", { "dependencies": { "@lucide/svelte": "^0.544.0", "marked": "^16.3.0", "neverthrow": "^8.2.0", "runed": "^0.34.0", "zod": "^4.1.11" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-QGywKxNIpl6HvE3r+SyfmQxBkUBOTX23GVvRyoOQXiZYLSySskXfzBuaZALJnzhjbzQbqNu653XW2Igd5xZWCQ=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.10", "", { "os": "aix", "cpu": "ppc64" }, "sha512-0NFWnA+7l41irNuaSVlLfgNT12caWJVLzp5eAVhZ0z1qpxbockccEt3s+149rE64VUI3Ml2zt8Nv5JVc4QXTsw=="],
 
@@ -455,7 +455,7 @@
 
     "zimmerframe": ["zimmerframe@1.1.4", "", {}, "sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ=="],
 
-    "zod": ["zod@4.1.11", "", {}, "sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg=="],
+    "zod": ["zod@4.1.12", "", {}, "sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ=="],
 
     "@tailwindcss/oxide-wasm32-wasi/@emnapi/core": ["@emnapi/core@1.5.0", "", { "dependencies": { "@emnapi/wasi-threads": "1.1.0", "tslib": "^2.4.0" }, "bundled": true }, "sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg=="],
 

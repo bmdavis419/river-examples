@@ -40,6 +40,13 @@ export const addTasksAgent = RIVER_SERVER.createAiSdkAgent({
 		userId: z.string(),
 		userMessage: z.string()
 	}),
+	beforeAgentRun: (input) => {
+		console.log('before agent run', input);
+		return input;
+	},
+	afterAgentRun: (status) => {
+		console.log('after agent run', status);
+	},
 	agent: ({ userId, userMessage }, abortSignal) => {
 		let curStep = 1;
 		return streamText({
