@@ -12,7 +12,7 @@ you can see a live demo [here](https://river-example-basic-custom.vercel.app/)
 
 ## stuff to go look at:
 
-- `src/lib/river/agents.ts` - the agent code
+- `src/lib/river/streams.ts` - the stream code
 - `src/lib/river/router.ts` - the router code
 - `src/lib/river/client.ts` - the river client definition code
 - `src/routes/+page.svelte` - the page code

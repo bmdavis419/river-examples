@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { myRiverClient } from '$lib/river/client.svelte';
+	import { myRiverClient } from '$lib/river/client';
 	import { Play, Square, RotateCcw } from '@lucide/svelte';
 
 	let agentResults = $state<{ letter: string; isVowel: boolean }[]>([]);
