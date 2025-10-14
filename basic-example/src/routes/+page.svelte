@@ -15,7 +15,7 @@
 
 	// this works just like mutations in trpc, it will not actually run until you call start
 	// the callbacks are optional, and will fire when they are defined and the agent starts
-	const { start, stop, status } = myRiverClient.basicExample({
+	const basicExample = myRiverClient.basicExample({
 		onStart: () => {
 			// fires when the agent starts
 			reset();
@@ -39,19 +39,19 @@
 		}
 	});
 
-	$inspect(status);
+	$inspect(basicExample.status);
 
 	const handleStart = async (event: SubmitEvent) => {
 		event.preventDefault();
 		// actually starts the agent
-		start({
+		basicExample.start({
 			message
 		});
 	};
 
 	const handleCancel = () => {
 		// stops the agent (uses an abort controller under the hood)
-		stop();
+		basicExample.stop();
 	};
 
 	const handleClear = () => {
@@ -70,12 +70,12 @@
 				bind:value={message}
 				placeholder="Enter your message..."
 				class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-900 focus:outline-none"
-				disabled={status === 'running'}
+				disabled={basicExample.status === 'running'}
 			/>
 
 			<button
 				type="submit"
-				disabled={status === 'running' || message.trim() === ''}
+				disabled={basicExample.status === 'running' || message.trim() === ''}
 				class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-900 text-white transition-colors hover:bg-blue-950 disabled:cursor-not-allowed disabled:bg-neutral-400"
 			>
 				<Play class="h-4 w-4" />
@@ -84,7 +84,7 @@
 			<button
 				type="button"
 				onclick={handleCancel}
-				disabled={status !== 'running'}
+				disabled={basicExample.status !== 'running'}
 				class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
 			>
 				<Square class="h-4 w-4" />
@@ -93,17 +93,17 @@
 			<button
 				type="button"
 				onclick={handleClear}
-				disabled={status === 'running'}
+				disabled={basicExample.status === 'running'}
 				class="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-600 text-white transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
 			>
 				<RotateCcw class="h-4 w-4" />
 			</button>
 		</form>
 
-		{#if status !== 'idle'}
+		{#if basicExample.status !== 'idle'}
 			<div class="flex flex-row items-center gap-3">
 				<div class="text-sm text-neutral-600">
-					Status: <span class="font-medium capitalize">{status}</span>
+					Status: <span class="font-medium capitalize">{basicExample.status}</span>
 				</div>
 				<div class="text-sm text-neutral-600">
 					Total Vowels: <span class="font-medium">{agentResultsTotalVowels}</span>

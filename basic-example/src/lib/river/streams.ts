@@ -19,7 +19,7 @@ export const basicExampleAgent = RIVER_STREAMS.createRiverStream()
 
 		const { message } = input;
 
-		stream.sendData(async ({ appendChunk }) => {
+		stream.sendData(async ({ appendChunk, close }) => {
 			const letters = message.split('');
 			const onlyLetters = letters.filter((letter) => /^[a-zA-Z]$/.test(letter));
 			for (let i = 0; i < onlyLetters.length; i++) {
@@ -28,6 +28,8 @@ export const basicExampleAgent = RIVER_STREAMS.createRiverStream()
 				appendChunk({ letter, isVowel });
 				await new Promise((resolve) => setTimeout(resolve, 20));
 			}
+
+			close();
 		});
 
 		return stream;
