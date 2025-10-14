@@ -1,7 +1,7 @@
-import { RIVER_SERVER } from '@davis7dotsh/river-alpha';
-import { addTasksAgent } from './agents';
+import { RIVER_STREAMS } from '@davis7dotsh/river-alpha';
+import { addTasksAgent } from './streams';
 
-export const myRiverRouter = RIVER_SERVER.createAgentRouter({
+export const myRiverRouter = RIVER_STREAMS.createRiverRouter({
 	addTasks: addTasksAgent
 });
 

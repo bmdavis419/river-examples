@@ -15,7 +15,7 @@ it's a very svelte-ty example, using the stores for the agent state because it's
 
 ## stuff to go look at:
 
-- `src/lib/river/agents.ts` - the agent code
+- `src/lib/river/streams.ts` - the agent code
 - `src/lib/river/router.ts` - the router code
 - `src/lib/river/client.ts` - the river client definition code
 - `src/routes/+page.svelte` - the page code

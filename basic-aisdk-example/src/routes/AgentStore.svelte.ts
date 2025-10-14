@@ -1,17 +1,17 @@
 import { myRiverClient } from '$lib/river/client';
 import type {
-	RiverClientCallerAiSdkToolSetType,
-	RiverClientCallerToolCallInputType,
-	RiverClientCallerToolCallOutputType
+	RiverAiSdkToolInputType,
+	RiverAiSdkToolOutputType,
+	RiverAiSdkToolSet
 } from '@davis7dotsh/river-alpha';
 import { marked } from 'marked';
 
-type AgentToolSet = RiverClientCallerAiSdkToolSetType<typeof myRiverClient.addTasks>;
+type AgentToolSet = RiverAiSdkToolSet<ReturnType<typeof myRiverClient.addTasks>>;
 
-type AgentTaskToolCallInput = RiverClientCallerToolCallInputType<AgentToolSet, 'add_task'>;
-type AgentTaskToolCallOutput = RiverClientCallerToolCallOutputType<AgentToolSet, 'add_task'>;
-type AgentDateToolCallInput = RiverClientCallerToolCallInputType<AgentToolSet, 'get_todays_date'>;
-type AgentDateToolCallOutput = RiverClientCallerToolCallOutputType<AgentToolSet, 'get_todays_date'>;
+type AgentTaskToolCallInput = RiverAiSdkToolInputType<AgentToolSet, 'add_task'>;
+type AgentTaskToolCallOutput = RiverAiSdkToolOutputType<AgentToolSet, 'add_task'>;
+type AgentDateToolCallInput = RiverAiSdkToolInputType<AgentToolSet, 'get_todays_date'>;
+type AgentDateToolCallOutput = RiverAiSdkToolOutputType<AgentToolSet, 'get_todays_date'>;
 
 type DisplayToolCall = {
 	type: 'tool_call';
@@ -49,7 +49,6 @@ export class AgentStore {
 	userMessageInput = $state(
 		'I need to go to the gym later tonight, then tmrw I have a flight to catch, and I need to finish packing for it'
 	);
-	agentStatus = $state<'idle' | 'running' | 'success' | 'error' | 'cancelled'>('idle');
 	agentOutput = $state<DisplayAgentOutput[]>([]);
 
 	finalTextOutput = $derived.by(() => {
@@ -64,13 +63,11 @@ export class AgentStore {
 
 	reset() {
 		this.agentOutput = [];
-		this.agentStatus = 'idle';
 	}
 
 	private taskAgentCaller = myRiverClient.addTasks({
 		onStart: () => {
 			this.reset();
-			this.agentStatus = 'running';
 		},
 		onChunk: (streamChunk) => {
 			switch (streamChunk.type) {
@@ -131,25 +128,14 @@ export class AgentStore {
 			}
 		},
 		onError: (error) => {
-			this.agentStatus = 'error';
 			console.error(error);
 		},
-		onComplete: (output) => {
-			console.log(
-				'agent finished,',
-				output.totalChunks,
-				`chunks in ${(output.duration / 1000).toFixed(2)} seconds`
-			);
-			if (this.agentStatus === 'running') {
-				this.agentStatus = 'success';
-				// remove the last break
-				this.agentOutput.pop();
-			}
+		onSuccess: () => {
+			this.agentOutput.pop();
 			this.userMessageInput = '';
 		},
 		onCancel: () => {
 			console.warn('agent cancelled');
-			this.agentStatus = 'cancelled';
 		}
 	});
 
@@ -159,6 +145,8 @@ export class AgentStore {
 			userMessage: this.userMessageInput
 		});
 	}
+
+	agentStatus = $derived(this.taskAgentCaller.status);
 
 	handleStopAgent() {
 		this.taskAgentCaller.stop();

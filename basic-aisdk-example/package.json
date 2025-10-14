@@ -16,24 +16,24 @@
 	"devDependencies": {
 		"@openrouter/ai-sdk-provider": "^1.2.0",
 		"@sveltejs/adapter-vercel": "^5.10.3",
-		"@sveltejs/kit": "^2.44.0",
+		"@sveltejs/kit": "^2.46.5",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.14",
-		"ai": "^5.0.60",
+		"ai": "^5.0.71",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.6.14",
-		"svelte": "^5.39.9",
-		"svelte-check": "^4.3.2",
+		"svelte": "^5.40.0",
+		"svelte-check": "^4.3.3",
 		"tailwindcss": "^4.1.14",
 		"typescript": "^5.9.3",
-		"vite": "^7.1.9"
+		"vite": "^7.1.10"
 	},
 	"dependencies": {
-		"@davis7dotsh/river-alpha": "^0.0.5",
+		"@davis7dotsh/river-alpha": "^0.2.0",
 		"@lucide/svelte": "^0.544.0",
-		"marked": "^16.3.0",
+		"marked": "^16.4.0",
 		"zod": "^4.1.12"
 	}
 }
