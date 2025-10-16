@@ -63,11 +63,14 @@ export class AgentStore {
 
 	reset() {
 		this.agentOutput = [];
+		this.userMessageInput =
+			'I need to go to the gym later tonight, then tmrw I have a flight to catch, and I need to finish packing for it';
+		this.taskAgentCaller.reset();
 	}
 
 	private taskAgentCaller = myRiverClient.addTasks({
 		onStart: () => {
-			this.reset();
+			this.agentOutput = [];
 		},
 		onChunk: (streamChunk) => {
 			switch (streamChunk.type) {

@@ -31,7 +31,7 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
-		"@davis7dotsh/river-alpha": "^0.2.0",
+		"@davis7dotsh/river-alpha": "^0.3.0",
 		"@lucide/svelte": "^0.544.0",
 		"marked": "^16.4.0",
 		"zod": "^4.1.12"

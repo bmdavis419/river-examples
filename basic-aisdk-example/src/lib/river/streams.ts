@@ -57,7 +57,7 @@ export const addTasksAgent = RIVER_STREAMS.createRiverStream()
 			},
 			system: SYSTEM_PROMPT,
 			prompt: PROMPT,
-			model: openrouter('x-ai/grok-4-fast'),
+			model: openrouter('anthropic/claude-haiku-4.5'),
 			stopWhen: stepCountIs(10),
 			onStepFinish: (stepData) => {
 				console.log('finished step', stepData.toolCalls.length, 'tool calls made');
