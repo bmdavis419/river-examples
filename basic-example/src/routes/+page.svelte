@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { myRiverClient } from '$lib/river/client';
+	import type { RiverStreamChunkType } from '@davis7dotsh/river-alpha';
 	import { Play, Square, RotateCcw } from '@lucide/svelte';
 
-	let agentResults = $state<{ letter: string; isVowel: boolean }[]>([]);
+	let agentResults = $state<RiverStreamChunkType<typeof basicExample>[]>([]);
 	let agentResultsTotalVowels = $state(0);
 	let agentResultsTotalConsonants = $state(0);
 	let message = $state('');
@@ -57,6 +58,7 @@
 	const handleClear = () => {
 		// reset state
 		message = '';
+		basicExample.reset();
 		reset();
 	};
 </script>
