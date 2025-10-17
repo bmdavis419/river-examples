@@ -10,6 +10,6 @@
 	<title>River Durable Chat</title>
 </svelte:head>
 
-<div class="flex h-screen w-full flex-col bg-neutral-950 text-neutral-50">
+<div class=" flex h-screen w-full flex-col bg-neutral-950 text-neutral-50">
 	{@render children?.()}
 </div>

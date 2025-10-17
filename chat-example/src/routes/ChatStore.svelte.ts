@@ -18,10 +18,19 @@ const chatPageParamsSchema = z.object({
 type ChatDisplayEntry =
 	| {
 			type: 'text';
-			role: 'user' | 'assistant';
-			id: string;
-			rawText: string;
-			markdownText: string;
+			data:
+				| {
+						role: 'user';
+						text: string;
+				  }
+				| {
+						role: 'assistant';
+						runId: string;
+						resumeKey: string;
+						id: string;
+						rawText: string;
+						markdownText: string;
+				  };
 	  }
 	| {
 			type: 'tool-call';
@@ -38,6 +47,7 @@ export class ChatStore {
 	chatDisplay = $state<ChatDisplayEntry[]>([]);
 	private params = useSearchParams(chatPageParamsSchema);
 	private chatResumeKey = $derived(this.params.chatResumeKey);
+	private curRunId = '';
 
 	private chatCaller = myRiverClient.chat({
 		onChunk: (chunk) => {
@@ -45,18 +55,30 @@ export class ChatStore {
 				case 'text-start':
 					this.chatDisplay.push({
 						type: 'text',
-						role: 'assistant',
-						id: chunk.id,
-						rawText: '',
-						markdownText: ''
+						data: {
+							role: 'assistant',
+							id: chunk.id,
+							rawText: '',
+							markdownText: '',
+							runId: this.curRunId,
+							resumeKey: this.chatResumeKey
+						}
 					});
 					break;
 				case 'text-delta':
-					const curDisplayEntry = this.chatDisplay.find((entry) => entry.id === chunk.id);
-					if (!curDisplayEntry || curDisplayEntry.type !== 'text') break;
+					const curDisplayEntry = this.chatDisplay.find(
+						(entry) =>
+							entry.type === 'text' && entry.data.role === 'assistant' && entry.data.id === chunk.id
+					);
+					if (
+						!curDisplayEntry ||
+						curDisplayEntry.type !== 'text' ||
+						curDisplayEntry.data.role !== 'assistant'
+					)
+						break;
 
-					curDisplayEntry.rawText += chunk.text;
-					curDisplayEntry.markdownText = marked.parse(curDisplayEntry.rawText, {
+					curDisplayEntry.data.rawText += chunk.text;
+					curDisplayEntry.data.markdownText = marked.parse(curDisplayEntry.data.rawText, {
 						async: false
 					});
 					break;
@@ -84,18 +106,20 @@ export class ChatStore {
 	handleSendMessage = () => {
 		const properHistory = this.chatDisplay.reduce<ChatInput>((acc, entry) => {
 			if (entry.type === 'text') {
-				acc.push({ role: entry.role, content: entry.rawText });
+				if (entry.data.role === 'user') {
+					acc.push({ role: entry.data.role, content: entry.data.text });
+				} else {
+					acc.push({ role: entry.data.role, content: entry.data.rawText });
+				}
 			}
 			return acc;
 		}, []);
 		this.chatDisplay.push({
 			type: 'text',
-			role: 'user',
-			id: '',
-			rawText: this.currentUserMessage,
-			markdownText: marked.parse(this.currentUserMessage, {
-				async: false
-			})
+			data: {
+				role: 'user',
+				text: this.currentUserMessage
+			}
 		});
 		this.chatCaller.start([...properHistory, { role: 'user', content: this.currentUserMessage }]);
 	};
