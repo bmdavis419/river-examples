@@ -35,6 +35,7 @@
 		"@lucide/svelte": "^0.546.0",
 		"@vercel/functions": "^3.1.4",
 		"marked": "^16.4.0",
+		"runed": "^0.35.1",
 		"zod": "^4.1.12"
 	}
 }
