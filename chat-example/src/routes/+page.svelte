@@ -36,7 +36,7 @@
 	<header class="flex items-center justify-between p-4">
 		<h2 class="text-2xl font-bold">River Durable Chat</h2>
 		<div>
-			<p>THE STATUS WILL GO HERE...</p>
+			<p class="text-sm text-neutral-400">Status: {chatStore.chatRunStatus}</p>
 		</div>
 	</header>
 	<div class="min-h-0 flex-1 overflow-y-auto bg-neutral-900 p-4">
@@ -60,7 +60,8 @@
 		<textarea
 			placeholder="Type your message here..."
 			bind:value={chatStore.currentUserMessage}
-			class="mb-4 w-full resize-none rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-3 text-neutral-50 placeholder-neutral-500 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/50 focus:outline-none"
+			disabled={chatStore.chatRunStatus === 'running'}
+			class="mb-4 w-full resize-none rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-3 text-neutral-50 placeholder-neutral-500 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 			rows="2"
 			style="max-height: 140px; overflow-y: auto;"
 			onkeydown={handleKeydown}
@@ -71,15 +72,17 @@
 				<button
 					type="button"
 					onclick={() => chatStore.handleResetChat()}
-					class="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-600/50 focus:outline-none"
+					disabled={chatStore.chatRunStatus === 'running'}
+					class="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-600/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					Reset
 				</button>
 				<button
 					type="submit"
-					class="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-600/50 focus:outline-none"
+					disabled={chatStore.chatRunStatus === 'running'}
+					class="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-600/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					Send
+					{chatStore.chatRunStatus === 'running' ? 'Sending...' : 'Send'}
 				</button>
 			</div>
 		</div>

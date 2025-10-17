@@ -8,11 +8,11 @@ import z from 'zod';
 // TODO:
 // chat page UI
 // tools
-// store the chat history in local storage along side the resume key(s)
 // error handling
 
 const chatPageParamsSchema = z.object({
-	chatResumeKey: z.string().default('')
+	threadId: z.string().default(''),
+	curResumeKey: z.string().default('')
 });
 
 type ChatDisplayEntry =
@@ -25,8 +25,7 @@ type ChatDisplayEntry =
 				  }
 				| {
 						role: 'assistant';
-						runId: string;
-						resumeKey: string;
+						status: 'running' | 'completed' | 'error';
 						id: string;
 						rawText: string;
 						markdownText: string;
@@ -43,27 +42,34 @@ type ChatDisplayEntry =
 type ChatInput = RiverStreamInputType<ReturnType<typeof myRiverClient.chat>>;
 
 export class ChatStore {
-	currentUserMessage = $state('How does state work in vue?');
+	currentUserMessage = $state('');
 	chatDisplay = $state<ChatDisplayEntry[]>([]);
 	private params = useSearchParams(chatPageParamsSchema);
-	private chatResumeKey = $derived(this.params.chatResumeKey);
-	private curRunId = '';
+	private threadId = $derived(this.params.threadId);
+	private curResumeKey = $derived(this.params.curResumeKey);
+
+	private readonly LOCAL_STORAGE_KEY = 'river-chat-threads';
 
 	private chatCaller = myRiverClient.chat({
 		onChunk: (chunk) => {
 			switch (chunk.type) {
 				case 'text-start':
-					this.chatDisplay.push({
-						type: 'text',
-						data: {
-							role: 'assistant',
-							id: chunk.id,
-							rawText: '',
-							markdownText: '',
-							runId: this.curRunId,
-							resumeKey: this.chatResumeKey
-						}
-					});
+					const existingMessage = this.chatDisplay.find(
+						(entry) =>
+							entry.type === 'text' && entry.data.role === 'assistant' && entry.data.id === chunk.id
+					);
+					if (!existingMessage) {
+						this.chatDisplay.push({
+							type: 'text',
+							data: {
+								role: 'assistant',
+								id: chunk.id,
+								rawText: '',
+								markdownText: '',
+								status: 'running'
+							}
+						});
+					}
 					break;
 				case 'text-delta':
 					const curDisplayEntry = this.chatDisplay.find(
@@ -88,22 +94,80 @@ export class ChatStore {
 		},
 		onStart: () => {
 			console.log('chat started');
+			const lastAssistantMessage = [...this.chatDisplay]
+				.reverse()
+				.find((entry) => entry.type === 'text' && entry.data.role === 'assistant');
+			if (
+				lastAssistantMessage &&
+				lastAssistantMessage.type === 'text' &&
+				lastAssistantMessage.data.role === 'assistant'
+			) {
+				lastAssistantMessage.data.status = 'running';
+			}
 		},
 		onCancel: () => {
 			console.log('chat stream cancelled');
 		},
 		onError: (error) => {
 			console.error('chat error', error);
+			const lastAssistantMessage = [...this.chatDisplay]
+				.reverse()
+				.find((entry) => entry.type === 'text' && entry.data.role === 'assistant');
+			if (
+				lastAssistantMessage &&
+				lastAssistantMessage.type === 'text' &&
+				lastAssistantMessage.data.role === 'assistant'
+			) {
+				lastAssistantMessage.data.status = 'error';
+			}
+			this.params.curResumeKey = '';
+			this.saveThreadToStorage();
 		},
 		onSuccess: () => {
 			console.log('chat completed');
+			const lastAssistantMessage = [...this.chatDisplay]
+				.reverse()
+				.find((entry) => entry.type === 'text' && entry.data.role === 'assistant');
+			if (
+				lastAssistantMessage &&
+				lastAssistantMessage.type === 'text' &&
+				lastAssistantMessage.data.role === 'assistant'
+			) {
+				lastAssistantMessage.data.status = 'completed';
+			}
+			this.params.curResumeKey = '';
+			this.saveThreadToStorage();
 		},
 		onStreamInfo: (info) => {
-			this.params.chatResumeKey = info.resumeKey;
+			this.params.curResumeKey = info.resumeKey;
 		}
 	});
 
+	chatRunStatus = $derived(this.chatCaller.status);
+
+	private generateThreadId = (): string => {
+		return crypto.randomUUID();
+	};
+
+	private getThreadsFromStorage = (): Record<string, ChatDisplayEntry[]> => {
+		if (typeof window === 'undefined') return {};
+		const stored = window.localStorage.getItem(this.LOCAL_STORAGE_KEY);
+		return stored ? JSON.parse(stored) : {};
+	};
+
+	private saveThreadToStorage = () => {
+		if (typeof window === 'undefined') return;
+		const threads = this.getThreadsFromStorage();
+		threads[this.threadId] = this.chatDisplay;
+		window.localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(threads));
+	};
+
 	handleSendMessage = () => {
+		if (!this.threadId) {
+			const newThreadId = this.generateThreadId();
+			this.params.threadId = newThreadId;
+		}
+
 		const properHistory = this.chatDisplay.reduce<ChatInput>((acc, entry) => {
 			if (entry.type === 'text') {
 				if (entry.data.role === 'user') {
@@ -135,10 +199,26 @@ export class ChatStore {
 	};
 
 	constructor() {
-		$inspect(this.chatDisplay);
 		onMount(() => {
-			if (this.chatResumeKey) {
-				this.chatCaller.resume(this.chatResumeKey);
+			if (this.threadId) {
+				const threads = this.getThreadsFromStorage();
+				if (threads[this.threadId]) {
+					this.chatDisplay = threads[this.threadId];
+				}
+			}
+			if (this.curResumeKey) {
+				const lastAssistantMessage = [...this.chatDisplay]
+					.reverse()
+					.find((entry) => entry.type === 'text' && entry.data.role === 'assistant');
+				if (
+					lastAssistantMessage &&
+					lastAssistantMessage.type === 'text' &&
+					lastAssistantMessage.data.role === 'assistant'
+				) {
+					lastAssistantMessage.data.rawText = '';
+					lastAssistantMessage.data.markdownText = '';
+				}
+				this.chatCaller.resume(this.curResumeKey);
 			}
 		});
 	}
