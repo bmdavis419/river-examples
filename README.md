@@ -4,6 +4,14 @@ a collection of examples on how to use [river (it's like TRPC, but for streams/a
 
 ## examples
 
+### [basic river ex: resumable/durable stream](https://github.com/bmdavis419/river-examples/tree/main/resume-example)
+
+**shows off:**
+
+- an ai sdk agent with a bunch of tool calls in a contrived example
+- a page which displays tool calls, steps, and text as they come in
+- is fully durable, when you refresh the page, the stream will resume where it left off...
+
 ### [basic river ex: ai-sdk stream](https://github.com/bmdavis419/river-examples/tree/main/basic-aisdk-example)
 
 **shows off:**
