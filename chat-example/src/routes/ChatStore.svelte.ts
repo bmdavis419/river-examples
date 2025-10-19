@@ -227,49 +227,51 @@ export class ChatStore {
 					acc.push({ role: entry.data.role, content: entry.data.rawText });
 				}
 			}
-			if (entry.type === 'dynamic-tool-call') {
+			if (
+				entry.type === 'dynamic-tool-call' ||
+				entry.type === 'adding-task-tool' ||
+				entry.type === 'adding-note-tool'
+			) {
+				let toolName: string;
+				let toolInput: unknown;
+				let toolOutput: unknown;
+
+				if (entry.type === 'dynamic-tool-call') {
+					toolName = entry.toolName;
+					toolInput = JSON.parse(entry.toolInput);
+					toolOutput = JSON.parse(entry.toolOutput);
+				} else if (entry.type === 'adding-task-tool') {
+					toolName = 'save_task';
+					toolInput = entry.input;
+					toolOutput = entry.output;
+				} else {
+					toolName = 'save_note';
+					toolInput = entry.input;
+					toolOutput = entry.output;
+				}
+
 				acc.push({
-					role: 'tool',
+					role: 'assistant',
 					content: [
 						{
-							type: 'tool-result',
+							type: 'tool-call' as const,
 							toolCallId: entry.id,
-							toolName: entry.toolName,
-							output: {
-								type: 'text',
-								value: entry.toolOutput
-							}
+							toolName,
+							input: toolInput
 						}
 					]
 				});
-			}
-			if (entry.type === 'adding-task-tool') {
+
 				acc.push({
 					role: 'tool',
 					content: [
 						{
-							type: 'tool-result',
+							type: 'tool-result' as const,
 							toolCallId: entry.id,
-							toolName: 'save_task',
+							toolName,
 							output: {
-								type: 'text',
-								value: JSON.stringify(entry.output)
-							}
-						}
-					]
-				});
-			}
-			if (entry.type === 'adding-note-tool') {
-				acc.push({
-					role: 'tool',
-					content: [
-						{
-							type: 'tool-result',
-							toolCallId: entry.id,
-							toolName: 'save_note',
-							output: {
-								type: 'text',
-								value: JSON.stringify(entry.output)
+								type: 'json' as const,
+								value: toolOutput
 							}
 						}
 					]

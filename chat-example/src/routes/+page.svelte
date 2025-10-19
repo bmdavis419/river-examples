@@ -39,20 +39,57 @@
 			<p class="text-sm text-neutral-400">Status: {chatStore.chatRunStatus}</p>
 		</div>
 	</header>
-	<div class="min-h-0 flex-1 overflow-y-auto bg-neutral-900 p-4">
+	<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-neutral-900 p-4">
 		{#each chatStore.chatDisplay as entry}
 			{#if entry.type === 'text'}
 				{#if entry.data.role === 'user'}
-					<div class="mb-4 flex justify-end">
+					<div class="flex justify-end">
 						<div class="max-w-xs rounded-lg bg-blue-500 px-4 py-2 text-white">
 							{entry.data.text}
 						</div>
 					</div>
 				{:else}
-					<div class="prose-sm mb-4 prose-neutral prose-invert">
+					<div class="prose-sm prose-neutral prose-invert">
 						{@html entry.data.markdownText}
 					</div>
 				{/if}
+			{:else if entry.type === 'dynamic-tool-call'}
+				<div class="flex items-center gap-2 rounded-lg bg-neutral-800 px-3 py-2">
+					<div
+						class="h-2 w-2 rounded-full {entry.toolOutput.includes('error') ||
+						entry.toolOutput.includes('Error')
+							? 'bg-red-500'
+							: 'bg-green-500'}"
+					></div>
+					<span class="text-sm font-medium text-neutral-300"
+						>{entry.toolName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}: {JSON.parse(
+							entry.toolInput
+						).command || entry.toolInput}</span
+					>
+				</div>
+			{:else if entry.type === 'adding-task-tool'}
+				<div class="flex items-center gap-2 rounded-lg bg-neutral-800 px-3 py-2">
+					<div
+						class="h-2 w-2 rounded-full {entry.output.message.includes('error') ||
+						entry.output.message.includes('Error')
+							? 'bg-red-500'
+							: 'bg-green-500'}"
+					></div>
+					<span class="text-sm font-medium text-neutral-300"
+						>Add Task: "{entry.input.content}" (Due: {entry.input.dueDate})</span
+					>
+				</div>
+			{:else if entry.type === 'adding-note-tool'}
+				<div class="flex items-center gap-2 rounded-lg bg-neutral-800 px-3 py-2">
+					<div
+						class="h-2 w-2 rounded-full {entry.output.message.includes('error') ||
+						entry.output.message.includes('Error')
+							? 'bg-red-500'
+							: 'bg-green-500'}"
+					></div>
+					<span class="text-sm font-medium text-neutral-300">Add Note: "{entry.input.content}"</span
+					>
+				</div>
 			{/if}
 		{/each}
 	</div>

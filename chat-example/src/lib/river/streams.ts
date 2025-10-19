@@ -1,50 +1,56 @@
 import { OPENROUTER_API_KEY, S2_TOKEN } from '$env/static/private';
-import { RIVER_PROVIDERS, RIVER_STREAMS, type InferAiSdkChunkType } from '@davis7dotsh/river-alpha';
+import {
+	RIVER_PROVIDERS,
+	RIVER_STREAMS,
+	RiverError,
+	type InferAiSdkChunkType
+} from '@davis7dotsh/river-alpha';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { waitUntil } from '@vercel/functions';
-import { stepCountIs, streamText, tool, type ModelMessage } from 'ai';
+import { stepCountIs, streamText, tool, type ToolSet } from 'ai';
 import z from 'zod';
 
 const openrouter = createOpenRouter({
 	apiKey: OPENROUTER_API_KEY
 });
 
-const saveTaskTool = tool({
-	name: 'save_task',
-	description: "save a task to the user's todo list",
-	inputSchema: z.object({
-		content: z
-			.string()
-			.describe("the content of the task that will show up in the user's todo list"),
-		dueDate: z.string().describe('the due date of the task in the format YYYY-MM-DD')
+const tools = {
+	save_task: tool({
+		name: 'save_task',
+		description: "save a task to the user's todo list",
+		inputSchema: z.object({
+			content: z
+				.string()
+				.describe("the content of the task that will show up in the user's todo list"),
+			dueDate: z.string().describe('the due date of the task in the format YYYY-MM-DD')
+		}),
+		execute: async ({ content, dueDate }) => {
+			console.log('saving task', content, dueDate);
+			return {
+				success: true,
+				message: 'Task saved successfully'
+			};
+		}
 	}),
-	execute: async ({ content, dueDate }) => {
-		console.log('saving task', content, dueDate);
-		return {
-			success: true,
-			message: 'Task saved successfully'
-		};
-	}
-});
-
-const saveNoteTool = tool({
-	name: 'save_note',
-	description: "save a note for the user, it will appear in the user's notes.",
-	inputSchema: z.object({
-		content: z
-			.string()
-			.describe(
-				"the content of the note that will show up in the user's notes. USE MARKDOWN FORMATTING FOR THE NOTE."
-			)
-	}),
-	execute: async ({ content }) => {
-		console.log('saving note', content);
-		return {
-			success: true,
-			message: 'Note saved successfully'
-		};
-	}
-});
+	save_note: tool({
+		name: 'save_note',
+		description: "save a note for the user, it will appear in the user's notes.",
+		inputSchema: z.object({
+			content: z
+				.string()
+				.describe(
+					"the content of the note that will show up in the user's notes. USE MARKDOWN FORMATTING FOR THE NOTE."
+				)
+		}),
+		execute: async ({ content }) => {
+			console.log('saving note', content);
+			return {
+				success: true,
+				message: 'Note saved successfully'
+			};
+		}
+	})
+} satisfies ToolSet;
 
 const GET_SYSTEM_PROMPT = (today: string) => `
 You are a user's personal assistant. Your job is the following:
@@ -70,7 +76,17 @@ const inputSchema = z.object({
 			}),
 			z.object({
 				role: z.literal('assistant'),
-				content: z.string()
+				content: z.union([
+					z.string(),
+					z.array(
+						z.object({
+							type: z.literal('tool-call'),
+							toolCallId: z.string(),
+							toolName: z.string(),
+							input: z.unknown()
+						})
+					)
+				])
 			}),
 			z.object({
 				role: z.literal('tool'),
@@ -79,10 +95,16 @@ const inputSchema = z.object({
 						type: z.literal('tool-result'),
 						toolCallId: z.string(),
 						toolName: z.string(),
-						output: z.object({
-							type: z.literal('text'),
-							value: z.string()
-						})
+						output: z.union([
+							z.object({
+								type: z.literal('text'),
+								value: z.string()
+							}),
+							z.object({
+								type: z.literal('json'),
+								value: z.any()
+							})
+						])
 					})
 				)
 			})
@@ -99,13 +121,12 @@ export const chatStream = RIVER_STREAMS.createRiverStream()
 
 		const systemPrompt = GET_SYSTEM_PROMPT(today);
 
-		console.log('system prompt', systemPrompt);
-
-		const { fullStream } = streamText({
+		const result = streamText({
 			model: openrouter('anthropic/claude-haiku-4.5'),
-			tools: {
-				save_task: saveTaskTool,
-				save_note: saveNoteTool
+			tools,
+			onError: (error) => {
+				console.error('error', error);
+				throw new RiverError('ai generation failed', error, 'custom');
 			},
 			toolChoice: 'auto',
 			stopWhen: stepCountIs(10),
@@ -114,7 +135,7 @@ export const chatStream = RIVER_STREAMS.createRiverStream()
 		});
 
 		// this is how we get type safety on the chunks on the client
-		type ChunkType = InferAiSdkChunkType<typeof fullStream>;
+		type ChunkType = InferAiSdkChunkType<typeof result.fullStream>;
 
 		const activeStream = await initStream(
 			// this is how we setup s2 so that it will persist the stream data
@@ -122,7 +143,7 @@ export const chatStream = RIVER_STREAMS.createRiverStream()
 		);
 
 		activeStream.sendData(async ({ appendChunk, close }) => {
-			for await (const chunk of fullStream) {
+			for await (const chunk of result.fullStream) {
 				appendChunk(chunk);
 			}
 			await close();
