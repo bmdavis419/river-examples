@@ -1,5 +1,10 @@
 import { myRiverClient } from '$lib/river/client';
-import type { RiverStreamInputType } from '@davis7dotsh/river-alpha';
+import type {
+	RiverAiSdkToolInputType,
+	RiverAiSdkToolOutputType,
+	RiverAiSdkToolSet,
+	RiverStreamInputType
+} from '@davis7dotsh/river-alpha';
 import { marked } from 'marked';
 import { useSearchParams } from 'runed/kit';
 import { onMount } from 'svelte';
@@ -14,6 +19,15 @@ const chatPageParamsSchema = z.object({
 	threadId: z.string().default(''),
 	curResumeKey: z.string().default('')
 });
+
+type ChatInput = RiverStreamInputType<ReturnType<typeof myRiverClient.chat>>;
+
+type ChatToolSet = RiverAiSdkToolSet<ReturnType<typeof myRiverClient.chat>>;
+
+type SaveTaskToolInput = RiverAiSdkToolInputType<ChatToolSet, 'save_task'>;
+type SaveNoteToolInput = RiverAiSdkToolInputType<ChatToolSet, 'save_note'>;
+type SaveTaskToolOutput = RiverAiSdkToolOutputType<ChatToolSet, 'save_task'>;
+type SaveNoteToolOutput = RiverAiSdkToolOutputType<ChatToolSet, 'save_note'>;
 
 type ChatDisplayEntry =
 	| {
@@ -32,14 +46,24 @@ type ChatDisplayEntry =
 				  };
 	  }
 	| {
-			type: 'tool-call';
+			type: 'dynamic-tool-call';
 			toolName: string;
 			id: string;
 			toolInput: string;
 			toolOutput: string;
+	  }
+	| {
+			type: 'adding-task-tool';
+			id: string;
+			input: SaveTaskToolInput;
+			output: SaveTaskToolOutput;
+	  }
+	| {
+			type: 'adding-note-tool';
+			id: string;
+			input: SaveNoteToolInput;
+			output: SaveNoteToolOutput;
 	  };
-
-type ChatInput = RiverStreamInputType<ReturnType<typeof myRiverClient.chat>>;
 
 export class ChatStore {
 	currentUserMessage = $state('');
@@ -53,6 +77,33 @@ export class ChatStore {
 	private chatCaller = myRiverClient.chat({
 		onChunk: (chunk) => {
 			switch (chunk.type) {
+				case 'tool-result':
+					if (chunk.dynamic) {
+						this.chatDisplay.push({
+							type: 'dynamic-tool-call',
+							toolName: chunk.toolName,
+							id: chunk.toolCallId,
+							toolInput: JSON.stringify(chunk.input),
+							toolOutput: JSON.stringify(chunk.output)
+						});
+					} else {
+						if (chunk.toolName === 'save_note') {
+							this.chatDisplay.push({
+								type: 'adding-note-tool',
+								id: chunk.toolCallId,
+								input: chunk.input,
+								output: chunk.output
+							});
+						} else if (chunk.toolName === 'save_task') {
+							this.chatDisplay.push({
+								type: 'adding-task-tool',
+								id: chunk.toolCallId,
+								input: chunk.input,
+								output: chunk.output
+							});
+						}
+					}
+					break;
 				case 'text-start':
 					const existingMessage = this.chatDisplay.find(
 						(entry) =>
@@ -168,13 +219,61 @@ export class ChatStore {
 			this.params.threadId = newThreadId;
 		}
 
-		const properHistory = this.chatDisplay.reduce<ChatInput>((acc, entry) => {
+		const properHistory = this.chatDisplay.reduce<ChatInput['messages']>((acc, entry) => {
 			if (entry.type === 'text') {
 				if (entry.data.role === 'user') {
 					acc.push({ role: entry.data.role, content: entry.data.text });
 				} else {
 					acc.push({ role: entry.data.role, content: entry.data.rawText });
 				}
+			}
+			if (entry.type === 'dynamic-tool-call') {
+				acc.push({
+					role: 'tool',
+					content: [
+						{
+							type: 'tool-result',
+							toolCallId: entry.id,
+							toolName: entry.toolName,
+							output: {
+								type: 'text',
+								value: entry.toolOutput
+							}
+						}
+					]
+				});
+			}
+			if (entry.type === 'adding-task-tool') {
+				acc.push({
+					role: 'tool',
+					content: [
+						{
+							type: 'tool-result',
+							toolCallId: entry.id,
+							toolName: 'save_task',
+							output: {
+								type: 'text',
+								value: JSON.stringify(entry.output)
+							}
+						}
+					]
+				});
+			}
+			if (entry.type === 'adding-note-tool') {
+				acc.push({
+					role: 'tool',
+					content: [
+						{
+							type: 'tool-result',
+							toolCallId: entry.id,
+							toolName: 'save_note',
+							output: {
+								type: 'text',
+								value: JSON.stringify(entry.output)
+							}
+						}
+					]
+				});
 			}
 			return acc;
 		}, []);
@@ -185,7 +284,10 @@ export class ChatStore {
 				text: this.currentUserMessage
 			}
 		});
-		this.chatCaller.start([...properHistory, { role: 'user', content: this.currentUserMessage }]);
+		this.chatCaller.start({
+			today: new Date().toLocaleDateString(),
+			messages: [...properHistory, { role: 'user', content: this.currentUserMessage }]
+		});
 	};
 
 	handleStopStream = () => {
@@ -199,6 +301,7 @@ export class ChatStore {
 	};
 
 	constructor() {
+		$inspect(this.chatDisplay);
 		onMount(() => {
 			if (this.threadId) {
 				const threads = this.getThreadsFromStorage();
