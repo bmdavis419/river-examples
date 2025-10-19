@@ -151,3 +151,38 @@ export const chatStream = RIVER_STREAMS.createRiverStream()
 
 		return activeStream;
 	});
+
+export const threadTitleStream = RIVER_STREAMS.createRiverStream()
+	.input(
+		z.object({
+			firstMessage: z.string()
+		})
+	)
+	.runner(async ({ input, initStream }) => {
+		const { firstMessage } = input;
+
+		const { fullStream } = streamText({
+			model: openrouter('openai/gpt-oss-20b', {
+				provider: {
+					order: ['groq'],
+					allow_fallbacks: true
+				}
+			}),
+			system:
+				'Your job is to generate a title for a chat thread based on the first message. The title should be a single sentence that captures the essence of the chat thread. It should be no more than 6 words.',
+			prompt: firstMessage
+		});
+
+		type ChunkType = InferAiSdkChunkType<typeof fullStream>;
+
+		const activeStream = await initStream(RIVER_PROVIDERS.defaultRiverStorageProvider<ChunkType>());
+
+		activeStream.sendData(async ({ appendChunk, close }) => {
+			for await (const chunk of fullStream) {
+				appendChunk(chunk);
+			}
+			await close();
+		});
+
+		return activeStream;
+	});

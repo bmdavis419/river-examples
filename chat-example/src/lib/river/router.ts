@@ -1,8 +1,9 @@
 import { RIVER_STREAMS } from '@davis7dotsh/river-alpha';
-import { chatStream } from './streams';
+import { chatStream, threadTitleStream } from './streams';
 
 export const myRiverRouter = RIVER_STREAMS.createRiverRouter({
-	chat: chatStream
+	chat: chatStream,
+	threadTitle: threadTitleStream
 });
 
 export type MyRiverRouter = typeof myRiverRouter;

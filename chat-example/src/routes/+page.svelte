@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { ChatStore } from './ChatStore.svelte';
+	import { getCustomChatStore } from '$lib/stores/CustomChatStore.svelte';
 
-	const chatStore = new ChatStore();
+	const chatStore = getCustomChatStore();
 
 	const handleSubmit = (e: SubmitEvent) => {
 		e.preventDefault();

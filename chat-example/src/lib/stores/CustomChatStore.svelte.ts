@@ -1,78 +1,18 @@
 import { myRiverClient } from '$lib/river/client';
-import type {
-	RiverAiSdkToolInputType,
-	RiverAiSdkToolOutputType,
-	RiverAiSdkToolSet,
-	RiverStreamInputType
-} from '@davis7dotsh/river-alpha';
 import { marked } from 'marked';
 import { useSearchParams } from 'runed/kit';
-import { onMount } from 'svelte';
-import z from 'zod';
+import { createContext, onMount } from 'svelte';
+import { getThreadsStore } from '$lib/stores/ThreadsStore.svelte';
+import type { ChatDisplayEntry, ChatInput } from '$lib/types';
+import { chatPageParamsSchema } from '$lib/types';
 
-// TODO:
-// chat page UI
-// tools
-// error handling
-
-const chatPageParamsSchema = z.object({
-	threadId: z.string().default(''),
-	curResumeKey: z.string().default('')
-});
-
-type ChatInput = RiverStreamInputType<ReturnType<typeof myRiverClient.chat>>;
-
-type ChatToolSet = RiverAiSdkToolSet<ReturnType<typeof myRiverClient.chat>>;
-
-type SaveTaskToolInput = RiverAiSdkToolInputType<ChatToolSet, 'save_task'>;
-type SaveNoteToolInput = RiverAiSdkToolInputType<ChatToolSet, 'save_note'>;
-type SaveTaskToolOutput = RiverAiSdkToolOutputType<ChatToolSet, 'save_task'>;
-type SaveNoteToolOutput = RiverAiSdkToolOutputType<ChatToolSet, 'save_note'>;
-
-type ChatDisplayEntry =
-	| {
-			type: 'text';
-			data:
-				| {
-						role: 'user';
-						text: string;
-				  }
-				| {
-						role: 'assistant';
-						status: 'running' | 'completed' | 'error';
-						id: string;
-						rawText: string;
-						markdownText: string;
-				  };
-	  }
-	| {
-			type: 'dynamic-tool-call';
-			toolName: string;
-			id: string;
-			toolInput: string;
-			toolOutput: string;
-	  }
-	| {
-			type: 'adding-task-tool';
-			id: string;
-			input: SaveTaskToolInput;
-			output: SaveTaskToolOutput;
-	  }
-	| {
-			type: 'adding-note-tool';
-			id: string;
-			input: SaveNoteToolInput;
-			output: SaveNoteToolOutput;
-	  };
-
-export class ChatStore {
+class CustomChatStore {
 	currentUserMessage = $state('');
 	chatDisplay = $state<ChatDisplayEntry[]>([]);
 	private params = useSearchParams(chatPageParamsSchema);
 	private threadId = $derived(this.params.threadId);
 	private curResumeKey = $derived(this.params.curResumeKey);
-
-	private readonly LOCAL_STORAGE_KEY = 'river-chat-threads';
+	private threadsStore = getThreadsStore();
 
 	private chatCaller = myRiverClient.chat({
 		onChunk: (chunk) => {
@@ -172,7 +112,7 @@ export class ChatStore {
 				lastAssistantMessage.data.status = 'error';
 			}
 			this.params.curResumeKey = '';
-			this.saveThreadToStorage();
+			this.threadsStore.saveThread(this.threadId, this.chatDisplay);
 		},
 		onSuccess: () => {
 			console.log('chat completed');
@@ -187,7 +127,7 @@ export class ChatStore {
 				lastAssistantMessage.data.status = 'completed';
 			}
 			this.params.curResumeKey = '';
-			this.saveThreadToStorage();
+			this.threadsStore.saveThread(this.threadId, this.chatDisplay);
 		},
 		onStreamInfo: (info) => {
 			this.params.curResumeKey = info.resumeKey;
@@ -198,19 +138,6 @@ export class ChatStore {
 
 	private generateThreadId = (): string => {
 		return crypto.randomUUID();
-	};
-
-	private getThreadsFromStorage = (): Record<string, ChatDisplayEntry[]> => {
-		if (typeof window === 'undefined') return {};
-		const stored = window.localStorage.getItem(this.LOCAL_STORAGE_KEY);
-		return stored ? JSON.parse(stored) : {};
-	};
-
-	private saveThreadToStorage = () => {
-		if (typeof window === 'undefined') return;
-		const threads = this.getThreadsFromStorage();
-		threads[this.threadId] = this.chatDisplay;
-		window.localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(threads));
 	};
 
 	handleSendMessage = () => {
@@ -302,29 +229,44 @@ export class ChatStore {
 		this.chatCaller.reset();
 	};
 
+	openThread = (threadId: string) => {
+		this.handleResetChat();
+		this.params.threadId = threadId;
+		this.handleLoadThread();
+	};
+
+	handleLoadThread = () => {
+		if (this.threadId) {
+			const threadData = this.threadsStore.getThread(this.threadId);
+			if (threadData) {
+				this.chatDisplay = threadData;
+			}
+		}
+		if (this.curResumeKey) {
+			const lastAssistantMessage = [...this.chatDisplay]
+				.reverse()
+				.find((entry) => entry.type === 'text' && entry.data.role === 'assistant');
+			if (
+				lastAssistantMessage &&
+				lastAssistantMessage.type === 'text' &&
+				lastAssistantMessage.data.role === 'assistant'
+			) {
+				lastAssistantMessage.data.rawText = '';
+				lastAssistantMessage.data.markdownText = '';
+			}
+			this.chatCaller.resume(this.curResumeKey);
+		}
+	};
+
 	constructor() {
-		$inspect(this.chatDisplay);
 		onMount(() => {
-			if (this.threadId) {
-				const threads = this.getThreadsFromStorage();
-				if (threads[this.threadId]) {
-					this.chatDisplay = threads[this.threadId];
-				}
-			}
-			if (this.curResumeKey) {
-				const lastAssistantMessage = [...this.chatDisplay]
-					.reverse()
-					.find((entry) => entry.type === 'text' && entry.data.role === 'assistant');
-				if (
-					lastAssistantMessage &&
-					lastAssistantMessage.type === 'text' &&
-					lastAssistantMessage.data.role === 'assistant'
-				) {
-					lastAssistantMessage.data.rawText = '';
-					lastAssistantMessage.data.markdownText = '';
-				}
-				this.chatCaller.resume(this.curResumeKey);
-			}
+			this.handleLoadThread();
 		});
 	}
 }
+
+const [getCustomChatStore, internalSetCustomChatStore] = createContext<CustomChatStore>();
+
+const setCustomChatStore = () => internalSetCustomChatStore(new CustomChatStore());
+
+export { getCustomChatStore, setCustomChatStore };
