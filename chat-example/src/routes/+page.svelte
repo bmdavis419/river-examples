@@ -47,12 +47,12 @@
 			{#if entry.type === 'text'}
 				{#if entry.data.role === 'user'}
 					<div class="flex justify-end">
-						<div class="max-w-xs rounded-lg bg-purple-500 px-4 py-2 text-white">
+						<div class="max-w-xs rounded-lg bg-orange-600 px-4 py-2 text-white">
 							{entry.data.text}
 						</div>
 					</div>
 				{:else}
-					<div class="prose-sm prose-neutral prose-invert prose-a:text-purple-400">
+					<div class="prose-sm prose-neutral prose-invert prose-a:text-orange-400">
 						{@html entry.data.markdownText}
 					</div>
 				{/if}
@@ -117,14 +117,14 @@
 					type="button"
 					onclick={() => chatStore.handleResetChat()}
 					disabled={chatStore.chatRunStatus === 'running'}
-					class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-500 focus:ring-2 focus:ring-red-500/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+					class="inline-flex items-center gap-2 rounded-lg border border-orange-600 bg-transparent px-4 py-2 font-medium hover:bg-orange-600/10 focus:ring-2 focus:ring-orange-600/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<RotateCcw size={16} class="opacity-90" /> Reset
 				</button>
 				<button
 					type="submit"
 					disabled={chatStore.chatRunStatus === 'running'}
-					class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-4 py-2 font-medium text-white hover:bg-purple-400 focus:ring-2 focus:ring-purple-400/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+					class="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-600/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<Send size={16} class="opacity-90" />
 					{chatStore.chatRunStatus === 'running' ? 'Sending...' : 'Send'}

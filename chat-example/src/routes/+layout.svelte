@@ -24,7 +24,7 @@
 	>
 		<button
 			onclick={() => customChatStore.handleResetChat()}
-			class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-purple-400/30 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 hover:border-purple-400/50 hover:bg-neutral-900/60 focus:ring-2 focus:ring-purple-400/40 focus:outline-none"
+			class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-orange-400/30 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 hover:border-orange-400/50 hover:bg-neutral-900/60 focus:ring-2 focus:ring-orange-400/40 focus:outline-none"
 			><Plus size={16} class="opacity-90" /> New Thread</button
 		>
 		{#each threadsStore.threadsList as thread}

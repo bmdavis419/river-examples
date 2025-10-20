@@ -36,7 +36,7 @@
 
 <button
 	onclick={() => customChatStore.openThread(threadId)}
-	class="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 hover:text-neutral-50 focus:ring-2 focus:ring-purple-400/40 focus:outline-none"
+	class="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 hover:text-neutral-50 focus:ring-2 focus:ring-orange-400/40 focus:outline-none"
 	><MessageSquare size={16} class="opacity-90" />
 	{#if title}{title}{:else}{'new thread'}{/if}</button
 >
